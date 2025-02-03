@@ -1,0 +1,10 @@
+services:
+  flame:
+    container_name: ${FLAME_CONTAINER_NAME}
+    environment:
+      - PASSWORD=${FLAME_ENVIRONMENT_PASSWORD}
+    restart: ${FLAME_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_VOLUME_STORAGE}:/storage
+      - ${FLAME_VOLUME_DOCKER_SOCKET}:/var/run/docker.sock

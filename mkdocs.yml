@@ -1,36 +1,86 @@
 site_name: DockSTARTer
-site_description: DockSTARTer helps you get started with home server apps running in Docker.
-site_author: GhostWriters
 site_url: https://dockstarter.com
+site_author: GhostWriters
+site_description: DockSTARTer helps you get started with home server apps running in Docker.
 
-repo_url: https://github.com/GhostWriters/DockSTARTer
 repo_name: GhostWriters/DockSTARTer
+repo_url: https://github.com/GhostWriters/DockSTARTer
 
-copyright: Copyright &copy; 2021 GhostWriters
+copyright: Copyright &copy; 2023 GhostWriters
+
+theme:
+  name: material
+  features:
+    - content.action.edit
+    - content.code.copy
+    - navigation.footer
+    - navigation.instant
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  favicon: assets/favicon.ico
+  logo: assets/icon.png
 
 extra:
   analytics:
     provider: google
     property: G-QVNLHE95FS
-  manifest: manifest.webmanifest
   social:
     - icon: fontawesome/brands/discord
       link: https://dockstarter.com/discord
-    - icon: fontawesome/brands/github-square
+    - icon: fontawesome/brands/github
       link: https://github.com/GhostWriters/DockSTARTer
 
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.js
+
 markdown_extensions:
-  - pymdownx.keys
+  - admonition
+  - pymdownx.details
+  - pymdownx.escapeall
+  - pymdownx.extra
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
 
 plugins:
-  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+  - minify:
+      minify_html: true
   - redirects:
       redirect_maps:
         advanced/overrides.md: https://dockstarter.com/overrides/introduction/
         apps/hydra2.md: https://dockstarter.com/apps/nzbhydra2/
         apps/letsencrypt.md: https://dockstarter.com/apps/swag/
+        apps/minecraft_bedrock_server.md: https://dockstarter.com/apps/minecraftbedrockserver/
+        apps/minecraft_server.md: https://dockstarter.com/apps/minecraftserver/
         apps/mylar.md: https://dockstarter.com/apps/mylar3/
         apps/plexrequests.md: https://dockstarter.com/apps/ombi/
         apps/sickrage.md: https://dockstarter.com/apps/sickchill/
@@ -38,29 +88,12 @@ plugins:
         apps/unifi.md: https://dockstarter.com/apps/unificontroller/
         apps/vaultwarden.md: https://dockstarter.com/apps/bitwarden/
         discord.md: https://discord.gg/xR3cyUb
-
-theme:
-  name: material
-  features:
-    - navigation.instant
-  language: en
-  favicon: images/favicon.ico
-  logo: images/icon.png
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      primary: blue grey
-      accent: indigo
-      scheme: default
-      toggle:
-        icon: material/toggle-switch-off-outline
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      primary: blue grey
-      accent: indigo
-      scheme: slate
-      toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
+        overrides/fireflyiii.md: https://dockstarter.com/apps/fireflyiii/
+        overrides/kitana.md: https://dockstarter.com/apps/kitana/
+        overrides/overseerr.md: https://dockstarter.com/apps/overseerr/
+        overrides/petio.md: https://dockstarter.com/apps/petio/
+        overrides/requestrr.md: https://dockstarter.com/apps/requestrr/
+  - search
 
 nav:
   - Home: index.md
@@ -85,11 +118,13 @@ nav:
   - App Specifics:
       - apps/adguard.md
       - apps/adminer.md
-      - apps/airdcpp.md
-      - apps/airsonic.md
+      - apps/airsonicadvanced.md
       - apps/amd.md
       - apps/apcupsd.md
       - apps/apprise.md
+      - apps/audiobookshelf.md
+      - apps/autobrr.md
+      - apps/azuracast.md
       - apps/bazarr.md
       - apps/beets.md
       - apps/bitwarden.md
@@ -105,16 +140,22 @@ nav:
       - apps/deemix.md
       - apps/deluge.md
       - apps/delugevpn.md
+      - apps/doplarr.md
       - apps/dozzle.md
       - apps/duckdns.md
       - apps/duplicacy.md
       - apps/duplicati.md
       - apps/emby.md
+      - apps/fail2ban.md
       - apps/filebot.md
       - apps/filebrowser.md
+      - apps/fireflyiii.md
+      - apps/flame.md
       - apps/flaresolverr.md
       - apps/freshrss.md
+      - apps/gitea.md
       - apps/glances.md
+      - apps/gluetun.md
       - apps/goaccess.md
       - apps/grafana.md
       - apps/grocy.md
@@ -124,14 +165,21 @@ nav:
       - apps/headphones.md
       - apps/heimdall.md
       - apps/homeassistant.md
+      - apps/homebridge.md
+      - apps/homepage.md
+      - apps/homer.md
       - apps/htpcmanager.md
       - apps/httpserver.md
       - apps/huginn.md
       - apps/influxdb.md
       - apps/jackett.md
       - apps/jellyfin.md
+      - apps/jellyseerr.md
       - apps/jfago.md
+      - apps/kanboard.md
+      - apps/kitana.md
       - apps/kiwixserve.md
+      - apps/komga.md
       - apps/lazylibrarian.md
       - apps/ldapauth.md
       - apps/librespeed.md
@@ -142,13 +190,12 @@ nav:
       - apps/makemkv.md
       - apps/mariadb.md
       - apps/medusa.md
-      - apps/minecraft_bedrock_server.md
-      - apps/minecraft_server.md
+      - apps/minecraftbedrockserver.md
+      - apps/minecraftserver.md
       - apps/monitorr.md
       - apps/mosquitto.md
       - apps/moviematch.md
       - apps/murmur.md
-      - apps/muximux.md
       - apps/mylar3.md
       - apps/netdata.md
       - apps/nextcloud.md
@@ -159,10 +206,13 @@ nav:
       - apps/omadacontroller.md
       - apps/ombi.md
       - apps/openldap.md
+      - apps/openspeedtest.md
       - apps/openvpnas.md
       - apps/organizr.md
-      - apps/ouroboros.md
-      - apps/photoshow.md
+      - apps/overseerr.md
+      - apps/petio.md
+      - apps/pgadmin.md
+      - apps/pgbackup.md
       - apps/photostructure.md
       - apps/phpmyadmin.md
       - apps/picard.md
@@ -172,6 +222,8 @@ nav:
       - apps/plexanisync.md
       - apps/portainer.md
       - apps/portaineragent.md
+      - apps/postgres.md
+      - apps/privoxyvpn.md
       - apps/prometheus.md
       - apps/prowlarr.md
       - apps/pyload.md
@@ -180,27 +232,30 @@ nav:
       - apps/quasselcore.md
       - apps/quasselweb.md
       - apps/radarr.md
+      - apps/readarr.md
+      - apps/recyclarr.md
       - apps/requestrr.md
       - apps/resiliosync.md
       - apps/rsnapshot.md
-      - apps/rtorrentvpn.md
+      - apps/rustdesk.md
       - apps/rutorrent.md
       - apps/sabnzbd.md
       - apps/sabnzbdvpn.md
-      - apps/samba.md
       - apps/sickchill.md
-      - apps/sickrage.md
       - apps/smokeping.md
       - apps/sonarr.md
       - apps/speedtest.md
       - apps/swag.md
       - apps/synclounge.md
       - apps/syncthing.md
+      - apps/tandoor.md
       - apps/tautulli.md
       - apps/tdarr.md
       - apps/tdarrnode.md
       - apps/telegraf.md
       - apps/thelounge.md
+      - apps/timemachine.md
+      - apps/traefik.md
       - apps/traktarr.md
       - apps/transmission.md
       - apps/transmissionvpn.md
@@ -209,6 +264,7 @@ nav:
       - apps/unificontroller.md
       - apps/unmanic.md
       - apps/unpackerr.md
+      - apps/uptimekuma.md
       - apps/varken.md
       - apps/vsftpd.md
       - apps/watchtower.md
@@ -224,11 +280,6 @@ nav:
       - overrides/bw_plex.md
       - overrides/conreq.md
       - overrides/dashmachine.md
-      - overrides/fireflyiii.md
-      - overrides/kitana.md
       - overrides/nginxproxymanager.md
-      - overrides/overseerr.md
-      - overrides/petio.md
       - overrides/plpp.md
-      - overrides/requestrr.md
       - overrides/yacreader.md

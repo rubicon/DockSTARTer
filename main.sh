@@ -16,14 +16,18 @@ For regular usage you can run without providing any options.
 -a --add <appname>
     add the default .env variables for the app specified
 -c --compose
-    run docker-compose up with confirmation prompt
+    run docker compose up with confirmation prompt
 -c --compose <up/down/restart/pull>
-    run docker-compose commands without confirmation prompts
+    run docker compose commands without confirmation prompts
 -e --env
     update your .env file with new variables
 --env-get=<var>
+    get the value of a <var>iable in .env (variable name is forced to UPPER CASE)
+--env-get-lower=<var>
     get the value of a <var>iable in .env
 --env-set=<var>,<val>
+    Set the <val>ue of a <var>iable in .env (variable name is forced to UPPER CASE)
+--env-set-lower=<var>,<val>
     Set the <val>ue of a <var>iable in .env
 -f --force
     force certain install/upgrade actions to run even if they would not be needed
@@ -48,7 +52,6 @@ For regular usage you can run without providing any options.
 -x --debug
     debug
 EOF
-    exit
 }
 
 # Script Information
@@ -68,18 +71,17 @@ SCRIPTPATH=$(cd -P "$(dirname "$(get_scriptname)")" > /dev/null 2>&1 && pwd)
 readonly SCRIPTPATH
 SCRIPTNAME="${SCRIPTPATH}/$(basename "$(get_scriptname)")"
 readonly SCRIPTNAME
-readonly COMPOSE_ENV="${SCRIPTPATH}/compose/.env"
-export COMPOSE_ENV
 
 # Cleanup Function
 cleanup() {
     local -ri EXIT_CODE=$?
+    trap - ERR EXIT SIGABRT SIGALRM SIGHUP SIGINT SIGQUIT SIGTERM
     sudo sh -c "cat ${MKTEMP_LOG:-/dev/null} >> ${SCRIPTPATH}/dockstarter.log" || true
     sudo rm -f "${MKTEMP_LOG}" || true
     sudo sh -c "echo \"$(tail -1000 "${SCRIPTPATH}/dockstarter.log")\" > ${SCRIPTPATH}/dockstarter.log" || true
     sudo -E chmod +x "${SCRIPTNAME}" > /dev/null 2>&1 || true
 
-    if [[ ${CI:-} == true ]] && [[ ${TRAVIS_SECURE_ENV_VARS:-} == false ]]; then
+    if [[ ${CI-} == true ]] && [[ ${TRAVIS_SECURE_ENV_VARS-} == false ]]; then
         echo "TRAVIS_SECURE_ENV_VARS is false for Pull Requests from remote branches. Please retry failed builds!"
     fi
 
@@ -88,7 +90,6 @@ cleanup() {
     fi
 
     exit ${EXIT_CODE}
-    trap - ERR EXIT SIGABRT SIGALRM SIGHUP SIGINT SIGQUIT SIGTERM
 }
 trap 'cleanup' ERR EXIT SIGABRT SIGALRM SIGHUP SIGINT SIGQUIT SIGTERM
 
@@ -103,41 +104,43 @@ cmdline() {
         local DELIM=""
         case "${ARG}" in
             #translate --gnu-long-options to -g (short options)
-            --add) LOCAL_ARGS="${LOCAL_ARGS:-}-a " ;;
-            --compose) LOCAL_ARGS="${LOCAL_ARGS:-}-c " ;;
-            --debug) LOCAL_ARGS="${LOCAL_ARGS:-}-x " ;;
-            --env) LOCAL_ARGS="${LOCAL_ARGS:-}-e " ;;
+            --add) LOCAL_ARGS="${LOCAL_ARGS-}-a " ;;
+            --compose) LOCAL_ARGS="${LOCAL_ARGS-}-c " ;;
+            --debug) LOCAL_ARGS="${LOCAL_ARGS-}-x " ;;
+            --env) LOCAL_ARGS="${LOCAL_ARGS-}-e " ;;
             --env-*)
                 readonly ENVMETHOD=${ARG%%=*}
                 readonly ENVARG=${ARG#*=}
-                if [[ ${ENVMETHOD:-} == "${ENVARG:-}" ]]; then
+                if [[ ${ENVMETHOD-} == "${ENVARG-}" ]]; then
                     echo "Invalid usage. Must be on of the following:"
                     echo "  --env-set with variable name ('--env-set=VAR,VAL') and value"
                     echo "  --env-get with variable name ('--env-get=VAR')"
+                    echo "  --env-set-lower with variable name ('--env-set-lower=Var,VAL') and value"
+                    echo "  --env-get-lower with variable name ('--env-get-lower=Var')"
                     exit
                 else
                     readonly ENVVAR=${ENVARG%%,*}
                     readonly ENVVAL=${ENVARG#*,}
                 fi
                 ;;
-            --force) LOCAL_ARGS="${LOCAL_ARGS:-}-f " ;;
-            --help) LOCAL_ARGS="${LOCAL_ARGS:-}-h " ;;
-            --install) LOCAL_ARGS="${LOCAL_ARGS:-}-i " ;;
-            --prune) LOCAL_ARGS="${LOCAL_ARGS:-}-p " ;;
-            --remove) LOCAL_ARGS="${LOCAL_ARGS:-}-r " ;;
-            --test) LOCAL_ARGS="${LOCAL_ARGS:-}-t " ;;
-            --update) LOCAL_ARGS="${LOCAL_ARGS:-}-u " ;;
-            --verbose) LOCAL_ARGS="${LOCAL_ARGS:-}-v " ;;
+            --force) LOCAL_ARGS="${LOCAL_ARGS-}-f " ;;
+            --help) LOCAL_ARGS="${LOCAL_ARGS-}-h " ;;
+            --install) LOCAL_ARGS="${LOCAL_ARGS-}-i " ;;
+            --prune) LOCAL_ARGS="${LOCAL_ARGS-}-p " ;;
+            --remove) LOCAL_ARGS="${LOCAL_ARGS-}-r " ;;
+            --test) LOCAL_ARGS="${LOCAL_ARGS-}-t " ;;
+            --update) LOCAL_ARGS="${LOCAL_ARGS-}-u " ;;
+            --verbose) LOCAL_ARGS="${LOCAL_ARGS-}-v " ;;
             #pass through anything else
             *)
                 [[ ${ARG:0:1} == "-" ]] || DELIM='"'
-                LOCAL_ARGS="${LOCAL_ARGS:-}${DELIM}${ARG}${DELIM} "
+                LOCAL_ARGS="${LOCAL_ARGS-}${DELIM}${ARG}${DELIM} "
                 ;;
         esac
     done
 
     #Reset the positional parameters to the short options
-    eval set -- "${LOCAL_ARGS:-}"
+    eval set -- "${LOCAL_ARGS-}"
 
     while getopts ":a:c:efghipr:t:u:vx" OPTION; do
         case ${OPTION} in
@@ -219,13 +222,13 @@ cmdline() {
     done
     return
 }
-cmdline "${ARGS[@]:-}"
-if [[ -n ${DEBUG:-} ]] && [[ -n ${VERBOSE:-} ]]; then
+cmdline "${ARGS[@]-}"
+if [[ -n ${DEBUG-} ]] && [[ -n ${VERBOSE-} ]]; then
     readonly TRACE=1
 fi
 
 # Terminal Colors
-declare -Agr B=(# Background
+declare -Agr B=( # Background
     [B]=$(tput setab 4 2> /dev/null || echo -e "\e[44m") # Blue
     [C]=$(tput setab 6 2> /dev/null || echo -e "\e[46m") # Cyan
     [G]=$(tput setab 2 2> /dev/null || echo -e "\e[42m") # Green
@@ -235,7 +238,7 @@ declare -Agr B=(# Background
     [W]=$(tput setab 7 2> /dev/null || echo -e "\e[47m") # White
     [Y]=$(tput setab 3 2> /dev/null || echo -e "\e[43m") # Yellow
 )
-declare -Agr F=(# Foreground
+declare -Agr F=( # Foreground
     [B]=$(tput setaf 4 2> /dev/null || echo -e "\e[34m") # Blue
     [C]=$(tput setaf 6 2> /dev/null || echo -e "\e[36m") # Cyan
     [G]=$(tput setaf 2 2> /dev/null || echo -e "\e[32m") # Green
@@ -249,13 +252,13 @@ NC=$(tput sgr0 2> /dev/null || echo -e "\e[0m")
 readonly NC
 
 # Log Functions
-MKTEMP_LOG=$(mktemp) || echo "Failed to create temporary log file."
+MKTEMP_LOG=$(mktemp) || echo -e "Failed to create temporary log file.\nFailing command: ${F[C]}mktemp"
 readonly MKTEMP_LOG
 echo "DockSTARTer Log" > "${MKTEMP_LOG}"
 log() {
-    local TOTERM=${1:-}
-    local MESSAGE=${2:-}
-    echo -e "${MESSAGE:-}" | (
+    local TOTERM=${1-}
+    local MESSAGE=${2-}
+    echo -e "${MESSAGE-}" | (
         if [[ -n ${TOTERM} ]]; then
             tee -a "${MKTEMP_LOG}" >&2
         else
@@ -263,9 +266,9 @@ log() {
         fi
     )
 }
-trace() { log "${TRACE:-}" "${NC}$(date +"%F %T") ${F[B]}[TRACE ]${NC}   $*${NC}"; }
-debug() { log "${DEBUG:-}" "${NC}$(date +"%F %T") ${F[B]}[DEBUG ]${NC}   $*${NC}"; }
-info() { log "${VERBOSE:-}" "${NC}$(date +"%F %T") ${F[B]}[INFO  ]${NC}   $*${NC}"; }
+trace() { log "${TRACE-}" "${NC}$(date +"%F %T") ${F[B]}[TRACE ]${NC}   $*${NC}"; }
+debug() { log "${DEBUG-}" "${NC}$(date +"%F %T") ${F[B]}[DEBUG ]${NC}   $*${NC}"; }
+info() { log "${VERBOSE-}" "${NC}$(date +"%F %T") ${F[B]}[INFO  ]${NC}   $*${NC}"; }
 notice() { log true "${NC}$(date +"%F %T") ${F[G]}[NOTICE]${NC}   $*${NC}"; }
 warn() { log true "${NC}$(date +"%F %T") ${F[Y]}[WARN  ]${NC}   $*${NC}"; }
 error() { log true "${NC}$(date +"%F %T") ${F[R]}[ERROR ]${NC}   $*${NC}"; }
@@ -274,10 +277,21 @@ fatal() {
     exit 1
 }
 
+# System Information
+ARCH=$(uname -m)
+readonly ARCH
+export ARCH
+
+# Environment Information
+readonly COMPOSE_ENV="${SCRIPTPATH}/compose/.env"
+export COMPOSE_ENV
+
 # User/Group Information
 readonly DETECTED_PUID=${SUDO_UID:-$UID}
+export DETECTED_PUID
 DETECTED_UNAME=$(id -un "${DETECTED_PUID}" 2> /dev/null || true)
 readonly DETECTED_UNAME
+export DETECTED_UNAME
 DETECTED_PGID=$(id -g "${DETECTED_PUID}" 2> /dev/null || true)
 readonly DETECTED_PGID
 export DETECTED_PGID
@@ -286,9 +300,17 @@ readonly DETECTED_UGROUP
 export DETECTED_UGROUP
 DETECTED_HOMEDIR=$(eval echo "~${DETECTED_UNAME}" 2> /dev/null || true)
 readonly DETECTED_HOMEDIR
+export DETECTED_HOMEDIR
 
-# Repo Exists Function
-repo_exists() {
+# Check for supported CPU architecture
+check_arch() {
+    if [[ ${ARCH} != "aarch64" ]] && [[ ${ARCH} != "x86_64" ]]; then
+        fatal "Unsupported architecture."
+    fi
+}
+
+# Check if the repo exists relative to the SCRIPTPATH
+check_repo() {
     if [[ -d ${SCRIPTPATH}/.git ]] && [[ -d ${SCRIPTPATH}/.scripts ]]; then
         return
     else
@@ -296,16 +318,23 @@ repo_exists() {
     fi
 }
 
-# Root Check Function
-root_check() {
+# Check if running as root
+check_root() {
     if [[ ${DETECTED_PUID} == "0" ]] || [[ ${DETECTED_HOMEDIR} == "/root" ]]; then
         fatal "Running as root is not supported. Please run as a standard user with sudo."
     fi
 }
 
+# Check if running with sudo
+check_sudo() {
+    if [[ ${EUID} -eq 0 ]]; then
+        fatal "Running with sudo is not supported. Commands requiring sudo will prompt automatically when required."
+    fi
+}
+
 # Script Runner Function
 run_script() {
-    local SCRIPTSNAME=${1:-}
+    local SCRIPTSNAME=${1-}
     shift
     if [[ -f ${SCRIPTPATH}/.scripts/${SCRIPTSNAME}.sh ]]; then
         # shellcheck source=/dev/null
@@ -318,7 +347,7 @@ run_script() {
 
 # Test Runner Function
 run_test() {
-    local SCRIPTSNAME=${1:-}
+    local SCRIPTSNAME=${1-}
     shift
     local TESTSNAME="test_${SCRIPTSNAME}"
     if [[ -f ${SCRIPTPATH}/.scripts/${SCRIPTSNAME}.sh ]]; then
@@ -344,26 +373,22 @@ verlte() { printf '%s\n%s' "${1}" "${2}" | sort -C -V; }
 verlt() { ! verlte "${2}" "${1}"; }
 
 # Github Token for CI
-if [[ ${CI:-} == true ]] && [[ ${TRAVIS_SECURE_ENV_VARS:-} == true ]]; then
+if [[ ${CI-} == true ]] && [[ ${TRAVIS_SECURE_ENV_VARS-} == true ]]; then
     readonly GH_HEADER="Authorization: token ${GH_TOKEN}"
     export GH_HEADER
 fi
 
 # Main Function
 main() {
-    # Arch Check
-    ARCH=$(uname -m)
-    readonly ARCH
-    if [[ ${ARCH} != "aarch64" ]] && [[ ${ARCH} != "armv7l" ]] && [[ ${ARCH} != "x86_64" ]]; then
-        fatal "Unsupported architecture."
-    fi
+    check_arch
     # Terminal Check
     if [[ -t 1 ]]; then
-        root_check
+        check_root
+        check_sudo
     fi
     # Repo Check
     local PROMPT
-    if [[ ${FORCE:-} == true ]]; then
+    if [[ ${FORCE-} == true ]]; then
         PROMPT="FORCE"
     fi
     local DS_COMMAND
@@ -372,7 +397,7 @@ main() {
         local DS_SYMLINK
         DS_SYMLINK=$(readlink -f "${DS_COMMAND}")
         if [[ ${SCRIPTNAME} != "${DS_SYMLINK}" ]]; then
-            if repo_exists; then
+            if check_repo; then
                 if run_script 'question_prompt' "${PROMPT:-CLI}" N "DockSTARTer installation found at ${DS_SYMLINK} location. Would you like to run ${SCRIPTNAME} instead?"; then
                     run_script 'symlink_ds'
                     DS_COMMAND=$(command -v ds || true)
@@ -380,35 +405,27 @@ main() {
                 fi
             fi
             warn "Attempting to run DockSTARTer from ${DS_SYMLINK} location."
-            sudo -E bash "${DS_SYMLINK}" -vu
-            sudo -E bash "${DS_SYMLINK}" -vi
-            exec sudo -E bash "${DS_SYMLINK}" "${ARGS[@]:-}"
+            bash "${DS_SYMLINK}" -vu
+            bash "${DS_SYMLINK}" -vi
+            exec bash "${DS_SYMLINK}" "${ARGS[@]-}"
         fi
     else
-        if ! repo_exists; then
+        if ! check_repo; then
             warn "Attempting to clone DockSTARTer repo to ${DETECTED_HOMEDIR}/.docker location."
-            # Anti Sudo Check
-            if [[ ${EUID} -eq 0 ]]; then
-                fatal "Using sudo during cloning on first run is not supported."
-            fi
             git clone https://github.com/GhostWriters/DockSTARTer "${DETECTED_HOMEDIR}/.docker" || fatal "Failed to clone DockSTARTer repo.\nFailing command: ${F[C]}git clone https://github.com/GhostWriters/DockSTARTer \"${DETECTED_HOMEDIR}/.docker\""
             notice "Performing first run install."
-            exec sudo -E bash "${DETECTED_HOMEDIR}/.docker/main.sh" "-vi"
+            exec bash "${DETECTED_HOMEDIR}/.docker/main.sh" "-vi"
         fi
-    fi
-    # Sudo Check
-    if [[ ${EUID} -ne 0 ]]; then
-        exec sudo -E bash "${SCRIPTNAME}" "${ARGS[@]:-}"
     fi
     # Create Symlink
     run_script 'symlink_ds'
     # Execute CLI Argument Functions
-    if [[ -n ${ADD:-} ]]; then
+    if [[ -n ${ADD-} ]]; then
         run_script 'appvars_create' "${ADD}"
         run_script 'env_update'
         exit
     fi
-    if [[ -n ${COMPOSE:-} ]]; then
+    if [[ -n ${COMPOSE-} ]]; then
         case ${COMPOSE} in
             down)
                 run_script 'docker_compose' "${COMPOSE}"
@@ -426,44 +443,64 @@ main() {
         esac
         exit
     fi
-    if [[ -n ${ENV:-} ]]; then
-        run_script 'env_update'
+    if [[ -n ${ENV-} ]]; then
         run_script 'appvars_create_all'
+        run_script 'env_update'
         exit
     fi
-    if [[ -n ${ENVMETHOD:-} ]]; then
-        case "${ENVMETHOD:-}" in
+    if [[ -n ${ENVMETHOD-} ]]; then
+        case "${ENVMETHOD-}" in
             --env-get)
-                if [[ ${ENVVAR:-} != "" ]]; then
-                    run_script 'env_get' "${ENVVAR}"
+                if [[ ${ENVVAR-} != "" ]]; then
+                    run_script 'env_get' "${ENVVAR^^}"
                 else
                     echo "Invalid usage. Must be"
                     echo "  --env-get with variable name ('--env-get=VAR')"
+                    echo "  Variable name will be forced to UPPER CASE"
                 fi
                 ;;
             --env-set)
-                if [[ ${ENVVAR:-} != "" ]] && [[ ${ENVVAL:-} != "" ]]; then
-                    run_script 'env_set' "${ENVVAR}" "${ENVVAL}"
+                if [[ ${ENVVAR-} != "" ]] && [[ ${ENVVAL-} != "" ]]; then
+                    run_script 'env_set' "${ENVVAR^^}" "${ENVVAL}"
                 else
                     echo "Invalid usage. Must be"
                     echo "  --env-set with variable name and value ('--env-set=VAR,VAL')"
+                    echo "  Variable name will be forced to UPPER CASE"
+                fi
+                ;;
+            --env-get-lower)
+                if [[ ${ENVVAR-} != "" ]]; then
+                    run_script 'env_get' "${ENVVAR}"
+                else
+                    echo "Invalid usage. Must be"
+                    echo "  --env-get-lower with variable name ('--env-get-lower=Var')"
+                    echo "  Variable name can be Mixed Case"
+                fi
+                ;;
+            --env-set-lower)
+                if [[ ${ENVVAR-} != "" ]] && [[ ${ENVVAL-} != "" ]]; then
+                    run_script 'env_set' "${ENVVAR}" "${ENVVAL}"
+                else
+                    echo "Invalid usage. Must be"
+                    echo "  --env-set-lower with variable name and value ('--env-set-lower=Var,VAL')"
+                    echo "  Variable name can be Mixed Case"
                 fi
                 ;;
             *)
-                echo "Invalid option: '${ENVMETHOD:-}'"
+                echo "Invalid option: '${ENVMETHOD-}'"
                 ;;
         esac
         exit
     fi
-    if [[ -n ${INSTALL:-} ]]; then
+    if [[ -n ${INSTALL-} ]]; then
         run_script 'run_install'
         exit
     fi
-    if [[ -n ${PRUNE:-} ]]; then
+    if [[ -n ${PRUNE-} ]]; then
         run_script 'docker_prune'
         exit
     fi
-    if [[ -n ${REMOVE:-} ]]; then
+    if [[ -n ${REMOVE-} ]]; then
         if [[ ${REMOVE} == true ]]; then
             run_script 'appvars_purge_all'
             run_script 'env_update'
@@ -473,11 +510,11 @@ main() {
         fi
         exit
     fi
-    if [[ -n ${TEST:-} ]]; then
+    if [[ -n ${TEST-} ]]; then
         run_test "${TEST}"
         exit
     fi
-    if [[ -n ${UPDATE:-} ]]; then
+    if [[ -n ${UPDATE-} ]]; then
         if [[ ${UPDATE} == true ]]; then
             run_script 'update_self'
         else

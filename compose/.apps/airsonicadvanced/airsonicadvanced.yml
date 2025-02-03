@@ -1,0 +1,14 @@
+services:
+  airsonicadvanced:
+    container_name: ${AIRSONICADVANCED_CONTAINER_NAME}
+    environment:
+      - CONTEXT_PATH=${AIRSONICADVANCED_ENVIRONMENT_CONTEXT_PATH}
+      - JAVA_OPTS=${AIRSONICADVANCED_ENVIRONMENT_JAVA_OPTS}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    restart: ${AIRSONICADVANCED_RESTART}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_VOLUME_CONFIG}/airsonicadvanced:/config
+      - ${DOCKER_VOLUME_STORAGE}:/storage

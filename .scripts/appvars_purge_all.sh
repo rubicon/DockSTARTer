@@ -4,7 +4,7 @@ IFS=$'\n\t'
 
 appvars_purge_all() {
     if grep -q -P '_ENABLED='"'"'?false'"'"'?$' "${COMPOSE_ENV}"; then
-        if [[ ${CI:-} == true ]] || run_script 'question_prompt' "${PROMPT:-CLI}" Y "Would you like to purge variables for all disabled apps?"; then
+        if [[ ${CI-} == true ]] || run_script 'question_prompt' "${PROMPT:-CLI}" Y "Would you like to purge variables for all disabled apps?"; then
             info "Purging disabled app variables."
             while IFS= read -r line; do
                 local APPNAME=${line%%_ENABLED=*}
@@ -17,7 +17,7 @@ appvars_purge_all() {
 }
 
 test_appvars_purge_all() {
-    run_script 'env_update'
     run_script 'appvars_purge_all'
+    run_script 'env_update'
     cat "${COMPOSE_ENV}"
 }

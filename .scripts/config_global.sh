@@ -4,11 +4,11 @@ IFS=$'\n\t'
 
 config_global() {
     local APPNAME="Global"
-    local VARNAMES=(DOCKERCONFDIR DOCKERSTORAGEDIR DOCKERHOSTNAME PGID PUID TZ)
+    local VARNAMES=(DOCKER_VOLUME_CONFIG DOCKER_VOLUME_STORAGE DOCKER_HOSTNAME PGID PUID TZ)
     local APPVARS
     APPVARS=$(for v in "${VARNAMES[@]}"; do echo "${v}=$(run_script 'env_get' "${v}")"; done)
 
-    if run_script 'question_prompt' "${PROMPT:-}" N "Would you like to keep these settings for ${APPNAME}?\\n\\n${APPVARS}"; then
+    if run_script 'question_prompt' "${PROMPT-}" N "Would you like to keep these settings for ${APPNAME}?\\n\\n${APPVARS}"; then
         info "Keeping ${APPNAME} .env variables."
     else
         info "Configuring ${APPNAME} .env variables."
